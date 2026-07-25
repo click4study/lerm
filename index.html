@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LERM - Learning Enabled Revision Module</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      position: relative;
+    }
+    .badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      color: var(--primary);
+      margin: 0 0 20px;
+      font-size: 26px;
+    }
+    .selector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #475569;
+    }
+    select, input[type="file"], button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    select:focus {
+      outline: 2px solid var(--primary);
+    }
+    .display-box {
+      background: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 30px 15px;
+      margin-bottom: 25px;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .roll-display {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .name-display {
+      font-size: 22px;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 5px;
+    }
+    .btn-select {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-select:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+    .btn-select:disabled {
+      background-color: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .bulk-upload-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    .bulk-upload-section summary {
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .bulk-upload-section summary:hover { color: var(--primary); }
+    .upload-box {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    /* POP-UP MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: white;
+      padding: 35px 25px;
+      border-radius: 20px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+    .modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent-hover);
+      letter-spacing: 1px;
+    }
+    .modal-roll {
+      font-size: 52px;
+      font-weight: 900;
+      color: var(--primary);
+      margin: 10px 0 0;
+    }
+    .modal-name {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 25px;
+    }
+    .btn-close {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-close:hover { background-color: var(--primary-hover); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <span class="badge">Sainik School Interactive Module</span>
+  <h1>LEARNING ENABLED REVISION MODULE (LERM)</h1>
+
+  <!-- CLASS & SECTION SELECTORS -->
+  <div class="selector-grid">
+    <div>
+      <label for="class-select">Select Class</label>
+      <select id="class-select" onchange="updateSectionDropdown()">
+        <option value="">-- Choose Class --</option>
+      </select>
+    </div>
+    <div>
+      <label for="section-select">Select Section</label>
+      <select id="section-select" onchange="checkSelection()">
+        <option value="">-- Choose Section --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- RANDOM SHUFFLE DISPLAY AREA -->
+  <div class="display-box">
+    <div id="roll-display" class="roll-display">---</div>
+    <div id="name-display" class="name-display">Select Class & Section</div>
+  </div>
+
+  <button id="select-btn" class="btn-select" onclick="startRandomPicker()" disabled>
+    🎲 LET'S SELECT
+  </button>
+
+  <!-- ADVANCED BULK UPLOAD -->
+  <div class="bulk-upload-section">
+    <details>
+      <summary>⚙️ Manage / Upload Student Database (CSV)</summary>
+      <div class="upload-box">
+        <p style="font-size: 12px; color: #581c87; margin-top:0;">
+          Upload a CSV file formatted as:<br>
+          <code>Class, Section, Roll No, Student Name</code>
+        </p>
+        <input type="file" id="csv-file" accept=".csv, .txt">
+        <button onclick="processCSV()" style="margin-top: 10px; background-color: #7c3aed; color: white;">
+          Upload & Merge Database
+        </button>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- POP-UP MODAL FOR SELECTED STUDENT -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-title">🎉 Selected Cadet / Student</div>
+    <div id="modal-roll" class="modal-roll">#00</div>
+    <div id="modal-name" class="modal-name">Student Name</div>
+    <button class="btn-close" onclick="closeModal()">Continue Revision</button>
+  </div>
+</div>
+
+<script>
+  // DEFAULT DEMO DATABASE
+  let studentDatabase = [
+    { class: "Class 8", section: "A", roll: "101", name: "Malhar Bhongale" },
+    { class: "Class 8", section: "A", roll: "102", name: "Aarav Sharma" },
+    { class: "Class 8", section: "A", roll: "103", name: "Aditya Patil" },
+    { class: "Class 8", section: "B", roll: "104", name: "Rohan Kadam" },
+    { class: "Class 8", section: "B", roll: "105", name: "Siddharth Shinde" },
+    { class: "Class 9", section: "A", roll: "201", name: "Aniket Pawar" },
+    { class: "Class 9", section: "A", roll: "202", name: "Pranav Deshmukh" },
+    { class: "Class 10", section: "A", roll: "301", name: "Sarthak Chavan" },
+    { class: "Class 10", section: "B", roll: "302", name: "Omkar Jadhav" }
+  ];
+
+  window.onload = function() {
+    populateClassDropdown();
+  };
+
+  function populateClassDropdown() {
+    const classSelect = document.getElementById('class-select');
+    classSelect.innerHTML = '<option value="">-- Choose Class --</option>';
+    
+    // Get unique classes
+    const classes = [...new Set(studentDatabase.map(s => s.class))].sort();
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.innerText = c;
+      classSelect.appendChild(opt);
+    });
+
+    updateSectionDropdown();
+  }
+
+  function updateSectionDropdown() {
+    const selectedClass = document.getElementById('class-select').value;
+    const sectionSelect = document.getElementById('section-select');
+    sectionSelect.innerHTML = '<option value="">-- Choose Section --</option>';
+
+    if (selectedClass) {
+      const sections = [...new Set(
+        studentDatabase
+          .filter(s => s.class === selectedClass)
+          .map(s => s.section)
+      )].sort();
+
+      sections.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec;
+        opt.innerText = `Section ${sec}`;
+        sectionSelect.appendChild(opt);
+      });
+    }
+
+    checkSelection();
+  }
+
+  function checkSelection() {
+    const cls = document.getElementById('class-select').value;
+    const sec = document.getElementById('section-select').value;
+    const btn = document.getElementById('select-btn');
+    const nameDisplay = document.getElementById('name-display');
+
+    if (cls && sec) {
+      btn.disabled = false;
+      const count = getFilteredStudents().length;
+      nameDisplay.innerText = `${count} Students Ready`;
+      document.getElementById('roll-display').innerText = "---";
+    } else {
+      btn.disabled = true;
+      nameDisplay.innerText = "Select Class & Section";
+      document.getElementById('roll-display').innerText = "---";
+    }
+  }
+
+  function getFilteredStudents() {
+    const cls = document.getElementById('class-select').value;
+    const sec = document.getElementById('section-select').value;
+    return studentDatabase.filter(s => s.class === cls && s.section === sec);
+  }
+
+  // RANDOM PICKER & ANIMATION
+  function startRandomPicker() {
+    const students = getFilteredStudents();
+    if (students.length === 0) {
+      alert("No students found in this section!");
+      return;
+    }
+
+    const btn = document.getElementById('select-btn');
+    const rollDisplay = document.getElementById('roll-display');
+    const nameDisplay = document.getElementById('name-display');
+
+    btn.disabled = true;
+
+    let counter = 0;
+    const totalShuffleTime = 2500; // 2.5 seconds total
+    const intervalTime = 70; // Shuffle speed
+
+    const shuffleInterval = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * students.length);
+      rollDisplay.innerText = `#${students[randomIndex].roll}`;
+      nameDisplay.innerText = students[randomIndex].name;
+      counter += intervalTime;
+
+      if (counter >= totalShuffleTime) {
+        clearInterval(shuffleInterval);
+        
+        // Final Selection
+        const selectedStudent = students[Math.floor(Math.random() * students.length)];
+        rollDisplay.innerText = `#${selectedStudent.roll}`;
+        nameDisplay.innerText = selectedStudent.name;
+
+        // Open Pop-Up Modal
+        showModal(selectedStudent);
+        btn.disabled = false;
+      }
+    }, intervalTime);
+  }
+
+  function showModal(student) {
+    document.getElementById('modal-roll').innerText = `#${student.roll}`;
+    document.getElementById('modal-name').innerText = student.name;
+    document.getElementById('modal-overlay').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+  }
+
+  // BULK CSV PARSER
+  function processCSV() {
+    const fileInput = document.getElementById('csv-file');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Please select a CSV file first!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/);
+      let count = 0;
+
+      lines.forEach((line, index) => {
+        if (!line.trim()) return;
+        const parts = line.split(',').map(p => p.trim().replace(/^"+|"+$/g, ''));
+
+        // Skip header if present
+        if (index === 0 && (parts[0].toLowerCase().includes("class") || parts[2].toLowerCase().includes("roll"))) {
+          return;
+        }
+
+        if (parts.length >= 4) {
+          studentDatabase.push({
+            class: parts[0],
+            section: parts[1],
+            roll: parts[2],
+            name: parts[3]
+          });
+          count++;
+        }
+      });
+
+      if (count > 0) {
+        alert(`Successfully added ${count} student records!`);
+        populateClassDropdown();
+        fileInput.value = '';
+      } else {
+        alert("Could not parse file. Ensure format is: Class, Section, Roll No, Name");
+      }
+    };
+    reader.readAsText(file);
+  }
+</script>
+
+</body>
+</html>

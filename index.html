@@ -66,7 +66,7 @@
       margin-bottom: 6px;
       color: #475569;
     }
-    select, input[type="file"], button {
+    select, input[type="file"], input[type="password"], button {
       width: 100%;
       padding: 12px;
       border: 1px solid #cbd5e1;
@@ -74,7 +74,7 @@
       font-size: 15px;
       box-sizing: border-box;
     }
-    select:focus {
+    select:focus, input:focus {
       outline: 2px solid var(--primary);
     }
     .display-box {
@@ -126,21 +126,27 @@
       margin-top: 30px;
       padding-top: 20px;
       border-top: 1px solid #e2e8f0;
-      text-align: left;
+      text-align: center;
     }
-    .bulk-upload-section summary {
+    .btn-unlock {
+      background-color: #f3e8ff;
+      color: #6d28d9;
+      border: 1px solid #ddd6fe;
       font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
       font-size: 14px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
     }
-    .bulk-upload-section summary:hover { color: var(--primary); }
+    .btn-unlock:hover { background-color: #e9d5ff; }
+
     .upload-box {
       background: #faf5ff;
       border: 1px solid #e9d5ff;
       padding: 15px;
       border-radius: 8px;
-      margin-top: 10px;
+      margin-top: 15px;
+      text-align: left;
     }
 
     /* POP-UP MODAL STYLES */
@@ -163,7 +169,7 @@
     }
     .modal-card {
       background: white;
-      padding: 35px 25px;
+      padding: 30px 25px;
       border-radius: 20px;
       max-width: 420px;
       width: 90%;
@@ -205,6 +211,7 @@
       font-weight: 600;
     }
     .btn-close:hover { background-color: var(--primary-hover); }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -239,21 +246,26 @@
     🎲 LET'S SELECT
   </button>
 
-  <!-- ADVANCED BULK UPLOAD -->
+  <!-- PASSWORD PROTECTED BULK UPLOAD SECTION -->
   <div class="bulk-upload-section">
-    <details>
-      <summary>⚙️ Manage / Upload Student Database (CSV)</summary>
-      <div class="upload-box">
-        <p style="font-size: 12px; color: #581c87; margin-top:0;">
-          Upload a CSV file formatted as:<br>
-          <code>Class, Section, Roll No, Student Name</code>
-        </p>
-        <input type="file" id="csv-file" accept=".csv, .txt">
-        <button onclick="processCSV()" style="margin-top: 10px; background-color: #7c3aed; color: white;">
-          Upload & Merge Database
-        </button>
+    <button class="btn-unlock" onclick="openAuthModal()">
+      🔒 Manage / Upload Database (Admin Password Required)
+    </button>
+
+    <div id="upload-panel" class="upload-box hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0; color:#6d28d9;">🟢 Upload Panel Unlocked</h4>
+        <button onclick="lockUploadPanel()" style="width:auto; padding:4px 10px; font-size:12px; background:#dc2626; color:white; border:none; border-radius:4px; cursor:pointer;">Lock Panel</button>
       </div>
-    </details>
+      <p style="font-size: 12px; color: #581c87; margin: 10px 0;">
+        Upload a CSV file formatted as:<br>
+        <code>Class, Section, Roll No, Student Name</code>
+      </p>
+      <input type="file" id="csv-file" accept=".csv, .txt">
+      <button onclick="processCSV()" style="margin-top: 10px; background-color: #7c3aed; color: white;">
+        Upload & Merge Database
+      </button>
+    </div>
   </div>
 </div>
 
@@ -264,6 +276,19 @@
     <div id="modal-roll" class="modal-roll">#00</div>
     <div id="modal-name" class="modal-name">Student Name</div>
     <button class="btn-close" onclick="closeModal()">Continue Revision</button>
+  </div>
+</div>
+
+<!-- PASSWORD AUTHENTICATION MODAL -->
+<div id="auth-modal" class="modal-overlay">
+  <div class="modal-card">
+    <h3 style="margin-top:0; color:var(--primary);">Admin Security Verification</h3>
+    <p style="font-size:14px; color:#64748b;">Enter Admin Password to access student database upload facility:</p>
+    <input type="password" id="admin-pass" placeholder="Enter Password">
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button onclick="verifyPassword()" style="background-color:var(--primary); color:white;">Unlock</button>
+      <button onclick="closeAuthModal()" style="background-color:#64748b; color:white;">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -289,7 +314,6 @@
     const classSelect = document.getElementById('class-select');
     classSelect.innerHTML = '<option value="">-- Choose Class --</option>';
     
-    // Get unique classes
     const classes = [...new Set(studentDatabase.map(s => s.class))].sort();
     classes.forEach(c => {
       const opt = document.createElement('option');
@@ -363,8 +387,8 @@
     btn.disabled = true;
 
     let counter = 0;
-    const totalShuffleTime = 2500; // 2.5 seconds total
-    const intervalTime = 70; // Shuffle speed
+    const totalShuffleTime = 2500;
+    const intervalTime = 70;
 
     const shuffleInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * students.length);
@@ -375,12 +399,10 @@
       if (counter >= totalShuffleTime) {
         clearInterval(shuffleInterval);
         
-        // Final Selection
         const selectedStudent = students[Math.floor(Math.random() * students.length)];
         rollDisplay.innerText = `#${selectedStudent.roll}`;
         nameDisplay.innerText = selectedStudent.name;
 
-        // Open Pop-Up Modal
         showModal(selectedStudent);
         btn.disabled = false;
       }
@@ -395,6 +417,33 @@
 
   function closeModal() {
     document.getElementById('modal-overlay').classList.remove('active');
+  }
+
+  // AUTHENTICATION SECURITY FUNCTIONS
+  function openAuthModal() {
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('auth-modal').classList.add('active');
+    document.getElementById('admin-pass').focus();
+  }
+
+  function closeAuthModal() {
+    document.getElementById('auth-modal').classList.remove('active');
+  }
+
+  function verifyPassword() {
+    const pass = document.getElementById('admin-pass').value;
+    if (pass === "LERM@1982") {
+      closeAuthModal();
+      document.getElementById('upload-panel').classList.remove('hidden');
+      alert("Access Granted! Upload Panel is now unlocked.");
+    } else {
+      alert("Incorrect Password! Access Denied.");
+      document.getElementById('admin-pass').value = '';
+    }
+  }
+
+  function lockUploadPanel() {
+    document.getElementById('upload-panel').classList.add('hidden');
   }
 
   // BULK CSV PARSER
@@ -416,7 +465,6 @@
         if (!line.trim()) return;
         const parts = line.split(',').map(p => p.trim().replace(/^"+|"+$/g, ''));
 
-        // Skip header if present
         if (index === 0 && (parts[0].toLowerCase().includes("class") || parts[2].toLowerCase().includes("roll"))) {
           return;
         }

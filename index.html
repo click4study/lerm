@@ -276,7 +276,7 @@
       line-height: 1;
       margin-bottom: 10px;
     }
-    .modal-overlay.active .shake-card {
+    .modal-card.shake {
       animation: popupShake 0.4s ease-in-out;
     }
     @keyframes popupShake {
@@ -417,7 +417,7 @@
 
 <!-- UNHAPPY EMOJI FEEDBACK MODAL -->
 <div id="unhappy-modal-overlay" class="modal-overlay">
-  <div class="modal-card shake-card" style="background:#fef2f2; border: 2px solid #fca5a5;">
+  <div id="unhappy-card" class="modal-card" style="background:#fef2f2; border: 2px solid #fca5a5;">
     <div class="unhappy-emoji-box">🙁</div>
     <h2 style="color:var(--danger); margin: 5px 0;">Point Deducted!</h2>
     <p style="color:#7f1d1d; font-weight:600; font-size:15px;" id="unhappy-modal-text">Keep trying!</p>
@@ -500,7 +500,6 @@
     localStorage.setItem('lerm_student_db', JSON.stringify(studentDatabase));
   }
 
-  // SCHOOL NAME PROVISION
   function loadSchoolName() {
     const savedName = localStorage.getItem('lerm_school_name') || "Sainik School Interactive Module";
     document.getElementById('school-name-badge').innerText = savedName;
@@ -630,7 +629,6 @@
     }
   }
 
-  // TIMER & GRADING
   function startTimer() {
     clearInterval(timerInterval);
     const durationInput = parseInt(document.getElementById('timer-input').value) || 45;
@@ -688,7 +686,6 @@
     }
   }
 
-  // CELEBRATION CONFETTI SHOWER (+ Point)
   function triggerConfettiShower() {
     if (typeof confetti === 'function') {
       const duration = 2000;
@@ -705,14 +702,17 @@
     }
   }
 
-  // UNHAPPY EMOJI & SHAKE MODAL (- Point)
   function triggerUnhappyModal(studentName) {
     document.getElementById('unhappy-modal-text').innerText = `${studentName} (-1 Point)`;
     const unhappyModal = document.getElementById('unhappy-modal-overlay');
+    const unhappyCard = document.getElementById('unhappy-card');
+
     unhappyModal.classList.add('active');
+    unhappyCard.classList.add('shake');
 
     setTimeout(() => {
       unhappyModal.classList.remove('active');
+      unhappyCard.classList.remove('shake');
     }, 1400);
   }
 
@@ -747,7 +747,6 @@
     });
   }
 
-  // AUTHENTICATION & ADMIN CONTROLS
   function openAuthModal() {
     document.getElementById('admin-pass').value = '';
     document.getElementById('auth-modal').classList.add('active');
@@ -848,7 +847,6 @@
     }
   }
 
-  // CSV PARSER
   function processCSV() {
     const fileInput = document.getElementById('csv-file');
     const file = fileInput.files[0];

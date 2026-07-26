@@ -4,12 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LERM - Learning Enabled Revision Module</title>
+  <!-- Canvas Confetti Library for Allot Point Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
       --primary: #1e3a8a;
       --primary-hover: #1e40af;
       --accent: #f59e0b;
       --accent-hover: #d97706;
+      --success: #16a34a;
+      --danger: #dc2626;
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #0f172a;
@@ -22,134 +26,217 @@
       padding: 20px;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
       box-sizing: border-box;
+      position: relative;
     }
-    .container {
+
+    .layout-wrapper {
+      display: flex;
+      gap: 20px;
       width: 100%;
-      max-width: 650px;
+      max-width: 1050px;
+    }
+    .main-container {
+      flex: 2;
       background: var(--card-bg);
       padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
       text-align: center;
-      position: relative;
+    }
+    .sidebar-leaderboard {
+      flex: 1;
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      min-width: 280px;
+    }
+    
+    /* HEADER BADGE LAYOUT */
+    .header-badge-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
     }
     .badge {
       display: inline-block;
       background: #e0e7ff;
       color: var(--primary);
-      padding: 6px 14px;
+      padding: 6px 16px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.5px;
-      margin-bottom: 8px;
     }
-    h1 {
-      color: var(--primary);
-      margin: 0 0 20px;
-      font-size: 26px;
-    }
+
+    h1 { color: var(--primary); margin: 0 0 20px; font-size: 24px; }
     .selector-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 25px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     label {
       display: block;
       text-align: left;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 6px;
       color: #475569;
     }
-    select, input[type="file"], input[type="password"], button {
+    select, input, button {
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 14px;
       box-sizing: border-box;
-    }
-    select:focus, input:focus {
-      outline: 2px solid var(--primary);
     }
     .display-box {
       background: #f1f5f9;
       border: 2px dashed #cbd5e1;
       border-radius: 12px;
-      padding: 30px 15px;
-      margin-bottom: 25px;
-      min-height: 90px;
+      padding: 25px 15px;
+      margin-bottom: 20px;
+      min-height: 100px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
-    .roll-display {
-      font-size: 38px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .name-display {
-      font-size: 22px;
-      font-weight: 600;
-      color: #334155;
-      margin-top: 5px;
+    .roll-display { font-size: 38px; font-weight: 800; color: var(--primary); }
+    .name-display { font-size: 22px; font-weight: 600; color: #334155; margin-top: 5px; }
+    
+    .action-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     .btn-select {
       background-color: var(--accent);
       color: white;
       border: none;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      padding: 16px;
-      border-radius: 10px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-      transition: all 0.2s;
+      border-radius: 8px;
     }
-    .btn-select:hover {
-      background-color: var(--accent-hover);
-      transform: translateY(-2px);
+    .btn-select:hover { background-color: var(--accent-hover); }
+    .btn-absent {
+      background-color: #64748b;
+      color: white;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
     }
-    .btn-select:disabled {
-      background-color: #cbd5e1;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
+    .btn-absent:hover { background-color: #475569; }
+    button:disabled { background-color: #cbd5e1 !important; cursor: not-allowed !important; box-shadow: none; }
+
+    /* TIMER SECTION */
+    .timer-container {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .bulk-upload-section {
-      margin-top: 30px;
+    .timer-clock { font-size: 28px; font-weight: 800; color: var(--primary); }
+
+    /* LEADERBOARD STYLES */
+    .leaderboard-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 0;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .leaderboard-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0;
+    }
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .leaderboard-rank {
+      font-weight: 800;
+      color: var(--accent-hover);
+      width: 25px;
+    }
+    .leaderboard-info { flex: 1; text-align: left; padding-left: 8px; }
+    .leaderboard-name { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .leaderboard-details { font-size: 11px; color: #64748b; }
+    .leaderboard-score {
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--primary);
+      background: #e0e7ff;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    /* ADMIN PANELS */
+    .admin-section {
+      margin-top: 25px;
       padding-top: 20px;
       border-top: 1px solid #e2e8f0;
-      text-align: center;
     }
     .btn-unlock {
       background-color: #f3e8ff;
       color: #6d28d9;
       border: 1px solid #ddd6fe;
       font-weight: 600;
-      font-size: 14px;
       cursor: pointer;
-      padding: 10px;
-      border-radius: 8px;
     }
-    .btn-unlock:hover { background-color: #e9d5ff; }
-
-    .upload-box {
+    .admin-box {
       background: #faf5ff;
       border: 1px solid #e9d5ff;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 18px;
+      border-radius: 10px;
       margin-top: 15px;
       text-align: left;
     }
+    .student-list-editor {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+      margin-top: 10px;
+      padding: 10px;
+    }
+    .student-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+    }
 
-    /* POP-UP MODAL STYLES */
+    /* MODAL STYLES */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -163,156 +250,275 @@
       transition: opacity 0.3s ease;
       z-index: 1000;
     }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-card {
       background: white;
-      padding: 30px 25px;
-      border-radius: 20px;
+      padding: 30px;
+      border-radius: 16px;
       max-width: 420px;
       width: 90%;
-      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
-      transform: scale(0.8);
-      transition: transform 0.3s ease;
       text-align: center;
     }
-    .modal-overlay.active .modal-card {
-      transform: scale(1);
+    .modal-roll { font-size: 48px; font-weight: 900; color: var(--primary); margin-top: 10px; }
+    .modal-name { font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 20px; }
+    .btn-point-add {
+      background: var(--success); color: white; border: none; font-weight: 700; padding: 14px; border-radius: 8px; cursor: pointer;
     }
-    .modal-title {
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--accent-hover);
-      letter-spacing: 1px;
+    .btn-point-add:hover { background: #15803d; }
+    .btn-point-deduct {
+      background: var(--danger); color: white; border: none; font-weight: 700; padding: 14px; border-radius: 8px; cursor: pointer;
     }
-    .modal-roll {
-      font-size: 52px;
-      font-weight: 900;
-      color: var(--primary);
-      margin: 10px 0 0;
+    .btn-point-deduct:hover { background: #b91c1c; }
+    
+    /* UNHAPPY EMOJI & SHAKE EFFECT */
+    .unhappy-emoji-box {
+      font-size: 75px;
+      line-height: 1;
+      margin-bottom: 10px;
     }
-    .modal-name {
-      font-size: 26px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 25px;
+    .modal-overlay.active .shake-card {
+      animation: popupShake 0.4s ease-in-out;
     }
-    .btn-close {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
+    @keyframes popupShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-12px); }
+      40% { transform: translateX(12px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
     }
-    .btn-close:hover { background-color: var(--primary-hover); }
+
     .hidden { display: none !important; }
+
+    @media (max-width: 850px) {
+      .layout-wrapper { flex-direction: column; }
+      .sidebar-leaderboard { min-width: 100%; box-sizing: border-box; }
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <span class="badge">Sainik School Interactive Module</span>
-  <h1>LEARNING ENABLED REVISION MODULE (LERM)</h1>
-
-  <!-- CLASS & SECTION SELECTORS -->
-  <div class="selector-grid">
-    <div>
-      <label for="class-select">Select Class</label>
-      <select id="class-select" onchange="updateSectionDropdown()">
-        <option value="">-- Choose Class --</option>
-      </select>
+<div class="layout-wrapper">
+  
+  <!-- MAIN INTERACTIVE CONTAINER -->
+  <div class="main-container">
+    
+    <!-- HEADER WITH DYNAMIC SCHOOL NAME -->
+    <div class="header-badge-container">
+      <span id="school-name-badge" class="badge">Sainik School Interactive Module</span>
     </div>
-    <div>
-      <label for="section-select">Select Section</label>
-      <select id="section-select" onchange="checkSelection()">
-        <option value="">-- Choose Section --</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- RANDOM SHUFFLE DISPLAY AREA -->
-  <div class="display-box">
-    <div id="roll-display" class="roll-display">---</div>
-    <div id="name-display" class="name-display">Select Class & Section</div>
-  </div>
+    <h1>LEARNING ENABLED REVISION MODULE (LERM)</h1>
 
-  <button id="select-btn" class="btn-select" onclick="startRandomPicker()" disabled>
-    🎲 LET'S SELECT
-  </button>
-
-  <!-- PASSWORD PROTECTED BULK UPLOAD SECTION -->
-  <div class="bulk-upload-section">
-    <button class="btn-unlock" onclick="openAuthModal()">
-      🔒 Manage / Upload Database (Admin Password Required)
-    </button>
-
-    <div id="upload-panel" class="upload-box hidden">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h4 style="margin:0; color:#6d28d9;">🟢 Upload Panel Unlocked</h4>
-        <button onclick="lockUploadPanel()" style="width:auto; padding:4px 10px; font-size:12px; background:#dc2626; color:white; border:none; border-radius:4px; cursor:pointer;">Lock Panel</button>
+    <!-- SELECTORS -->
+    <div class="selector-grid">
+      <div>
+        <label>Select Class</label>
+        <select id="class-select" onchange="updateSectionDropdown()">
+          <option value="">-- Class --</option>
+        </select>
       </div>
-      <p style="font-size: 12px; color: #581c87; margin: 10px 0;">
-        Upload a CSV file formatted as:<br>
-        <code>Class, Section, Roll No, Student Name</code>
-      </p>
-      <input type="file" id="csv-file" accept=".csv, .txt">
-      <button onclick="processCSV()" style="margin-top: 10px; background-color: #7c3aed; color: white;">
-        Upload & Merge Database
-      </button>
+      <div>
+        <label>Select Section</label>
+        <select id="section-select" onchange="checkSelection()">
+          <option value="">-- Section --</option>
+        </select>
+      </div>
+      <div>
+        <label>Timer Limit (Sec)</label>
+        <input type="number" id="timer-input" value="45" min="5" max="300">
+      </div>
+    </div>
+
+    <!-- DISPLAY BOX -->
+    <div class="display-box">
+      <div id="roll-display" class="roll-display">---</div>
+      <div id="name-display" class="name-display">Select Class & Section</div>
+    </div>
+
+    <!-- MAIN ACTIONS -->
+    <div class="action-grid">
+      <button id="select-btn" class="btn-select" onclick="startRandomPicker()" disabled>🎲 LET'S SELECT</button>
+      <button id="absent-btn" class="btn-absent" onclick="markCurrentAbsent()" disabled>🚫 Mark Absent</button>
+    </div>
+
+    <!-- COUNTDOWN TIMER DISPLAY -->
+    <div class="timer-container">
+      <span style="font-weight:700; color:#1e40af; font-size: 15px;">⏱️ Revision Countdown:</span>
+      <div id="timer-clock" class="timer-clock">00:45</div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="admin-section">
+      <button class="btn-unlock" onclick="openAuthModal()">🔒 Admin Database Controls (Password Required)</button>
+
+      <div id="admin-panel" class="admin-box hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4 style="margin:0; color:#6d28d9;">🟢 Admin Controls Unlocked</h4>
+          <button onclick="lockAdminPanel()" style="width:auto; padding:4px 10px; font-size:12px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Lock Panel</button>
+        </div>
+
+        <!-- SCHOOL NAME SETTING PROVISION -->
+        <div style="margin-top: 15px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e9d5ff;">
+          <label style="color:#6d28d9; margin-bottom:4px;">Custom School / Institute Name:</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="admin-school-name-input" placeholder="e.g., Sainik School Satara">
+            <button onclick="saveSchoolName()" style="width:auto; padding:8px 15px; background:#7c3aed; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Save</button>
+          </div>
+        </div>
+
+        <p style="font-size: 12px; color: #581c87; margin: 15px 0 5px;"><strong>Bulk Upload (CSV / Text):</strong> Format: <code>Class, Section, Roll No, Student Name</code></p>
+        <input type="file" id="csv-file" accept=".csv, .txt">
+        <button onclick="processCSV()" style="margin-top: 8px; background-color: #7c3aed; color: white;">Upload & Merge Records</button>
+
+        <hr style="border:0; border-top:1px solid #e9d5ff; margin: 15px 0;">
+
+        <h5 style="margin:0 0 5px; color:#4c1d95;">Edit or Remove Saved Students</h5>
+        <div id="student-list-editor" class="student-list-editor"></div>
+        
+        <button onclick="resetToDefaultData()" style="margin-top: 10px; background-color: var(--danger); color: white;">Reset All Stored Data</button>
+      </div>
     </div>
   </div>
+
+  <!-- SIDEBAR LEADERBOARD -->
+  <div class="sidebar-leaderboard">
+    <h3 class="leaderboard-title">🏆 TOPPERS</h3>
+    <ul id="leaderboard-list" class="leaderboard-list">
+      <li style="text-align:center; color:#94a3b8; padding:20px 0;">No points awarded yet.</li>
+    </ul>
+  </div>
+
 </div>
 
-<!-- POP-UP MODAL FOR SELECTED STUDENT -->
+<!-- SELECTION ANNOUNCEMENT MODAL -->
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal-card">
-    <div class="modal-title">🎉 Selected Cadet / Student</div>
+    <div style="font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase;">🎉 Selected Cadet / Student</div>
     <div id="modal-roll" class="modal-roll">#00</div>
     <div id="modal-name" class="modal-name">Student Name</div>
-    <button class="btn-close" onclick="closeModal()">Continue Revision</button>
+    <button onclick="closeModalAndStartTimer()" style="background: var(--primary); color: white; padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Start Revision</button>
   </div>
 </div>
 
-<!-- PASSWORD AUTHENTICATION MODAL -->
+<!-- TIME-UP SCORING POP-UP MODAL -->
+<div id="score-modal-overlay" class="modal-overlay">
+  <div class="modal-card">
+    <div style="font-size: 13px; font-weight: 700; color: var(--danger); text-transform: uppercase;">⏰ Time Up For Revision!</div>
+    <div id="score-modal-roll" class="modal-roll">#00</div>
+    <div id="score-modal-name" class="modal-name">Student Name</div>
+    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Evaluate cadet's response:</p>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <button class="btn-point-add" onclick="adjustPoints(1)">+ Allot Point</button>
+      <button class="btn-point-deduct" onclick="adjustPoints(-1)">- Deduct Point</button>
+    </div>
+  </div>
+</div>
+
+<!-- UNHAPPY EMOJI FEEDBACK MODAL -->
+<div id="unhappy-modal-overlay" class="modal-overlay">
+  <div class="modal-card shake-card" style="background:#fef2f2; border: 2px solid #fca5a5;">
+    <div class="unhappy-emoji-box">🙁</div>
+    <h2 style="color:var(--danger); margin: 5px 0;">Point Deducted!</h2>
+    <p style="color:#7f1d1d; font-weight:600; font-size:15px;" id="unhappy-modal-text">Keep trying!</p>
+  </div>
+</div>
+
+<!-- ADMIN EDIT STUDENT MODAL -->
+<div id="edit-modal-overlay" class="modal-overlay">
+  <div class="modal-card" style="text-align: left;">
+    <h3 style="margin-top:0; color:var(--primary); text-align: center;">Edit Student Record</h3>
+    <input type="hidden" id="edit-student-index">
+    
+    <label style="margin-top:10px;">Class Name</label>
+    <input type="text" id="edit-class" placeholder="e.g., Class 8">
+
+    <label style="margin-top:10px;">Section</label>
+    <input type="text" id="edit-section" placeholder="e.g., A">
+
+    <label style="margin-top:10px;">Roll Number</label>
+    <input type="text" id="edit-roll" placeholder="e.g., 101">
+
+    <label style="margin-top:10px;">Student Name</label>
+    <input type="text" id="edit-name" placeholder="Student Name">
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button onclick="saveStudentEdit()" style="background:var(--success); color:white;">Save Changes</button>
+      <button onclick="closeEditModal()" style="background:#64748b; color:white;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN AUTH MODAL -->
 <div id="auth-modal" class="modal-overlay">
   <div class="modal-card">
-    <h3 style="margin-top:0; color:var(--primary);">Admin Security Verification</h3>
-    <p style="font-size:14px; color:#64748b;">Enter Admin Password to access student database upload facility:</p>
-    <input type="password" id="admin-pass" placeholder="Enter Password">
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <button onclick="verifyPassword()" style="background-color:var(--primary); color:white;">Unlock</button>
-      <button onclick="closeAuthModal()" style="background-color:#64748b; color:white;">Cancel</button>
+    <h3 style="margin-top:0; color:var(--primary);">Admin Verification</h3>
+    <p style="font-size:13px; color:#64748b;">Enter password to edit student records or upload files:</p>
+    <input type="password" id="admin-pass" placeholder="Enter Admin Password">
+    <div style="display:flex; gap:10px; margin-top:12px;">
+      <button onclick="verifyPassword()" style="background:var(--primary); color:white;">Unlock Controls</button>
+      <button onclick="closeAuthModal()" style="background:#64748b; color:white;">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-  // DEFAULT DEMO DATABASE
-  let studentDatabase = [
-    { class: "Class 8", section: "A", roll: "101", name: "Malhar Bhongale" },
-    { class: "Class 8", section: "A", roll: "102", name: "Aarav Sharma" },
-    { class: "Class 8", section: "A", roll: "103", name: "Aditya Patil" },
-    { class: "Class 8", section: "B", roll: "104", name: "Rohan Kadam" },
-    { class: "Class 8", section: "B", roll: "105", name: "Siddharth Shinde" },
-    { class: "Class 9", section: "A", roll: "201", name: "Aniket Pawar" },
-    { class: "Class 9", section: "A", roll: "202", name: "Pranav Deshmukh" },
-    { class: "Class 10", section: "A", roll: "301", name: "Sarthak Chavan" },
-    { class: "Class 10", section: "B", roll: "302", name: "Omkar Jadhav" }
+  const defaultDatabase = [
+    { class: "Class 8", section: "A", roll: "101", name: "Malhar Bhongale", points: 0 },
+    { class: "Class 8", section: "A", roll: "102", name: "Aarav Sharma", points: 0 },
+    { class: "Class 8", section: "A", roll: "103", name: "Aditya Patil", points: 0 },
+    { class: "Class 8", section: "B", roll: "104", name: "Rohan Kadam", points: 0 },
+    { class: "Class 8", section: "B", roll: "105", name: "Siddharth Shinde", points: 0 },
+    { class: "Class 9", section: "A", roll: "201", name: "Aniket Pawar", points: 0 },
+    { class: "Class 10", section: "A", roll: "301", name: "Sarthak Chavan", points: 0 }
   ];
 
+  let studentDatabase = [];
+  let excludedRolls = [];
+  let lastSelectedStudent = null;
+  let timerInterval = null;
+
   window.onload = function() {
+    loadDatabaseFromStorage();
+    loadSchoolName();
     populateClassDropdown();
+    updateLeaderboard();
   };
+
+  function loadDatabaseFromStorage() {
+    const stored = localStorage.getItem('lerm_student_db');
+    if (stored) {
+      studentDatabase = JSON.parse(stored);
+      studentDatabase.forEach(s => { if (s.points === undefined) s.points = 0; });
+    } else {
+      studentDatabase = JSON.parse(JSON.stringify(defaultDatabase));
+      saveDatabaseToStorage();
+    }
+  }
+
+  function saveDatabaseToStorage() {
+    localStorage.setItem('lerm_student_db', JSON.stringify(studentDatabase));
+  }
+
+  // SCHOOL NAME PROVISION
+  function loadSchoolName() {
+    const savedName = localStorage.getItem('lerm_school_name') || "Sainik School Interactive Module";
+    document.getElementById('school-name-badge').innerText = savedName;
+    document.getElementById('admin-school-name-input').value = savedName;
+  }
+
+  function saveSchoolName() {
+    const newName = document.getElementById('admin-school-name-input').value.trim();
+    if (newName) {
+      localStorage.setItem('lerm_school_name', newName);
+      document.getElementById('school-name-badge').innerText = newName;
+      alert("School / Institute Name updated successfully!");
+    }
+  }
 
   function populateClassDropdown() {
     const classSelect = document.getElementById('class-select');
-    classSelect.innerHTML = '<option value="">-- Choose Class --</option>';
+    classSelect.innerHTML = '<option value="">-- Class --</option>';
     
     const classes = [...new Set(studentDatabase.map(s => s.class))].sort();
     classes.forEach(c => {
@@ -328,13 +534,11 @@
   function updateSectionDropdown() {
     const selectedClass = document.getElementById('class-select').value;
     const sectionSelect = document.getElementById('section-select');
-    sectionSelect.innerHTML = '<option value="">-- Choose Section --</option>';
+    sectionSelect.innerHTML = '<option value="">-- Section --</option>';
 
     if (selectedClass) {
       const sections = [...new Set(
-        studentDatabase
-          .filter(s => s.class === selectedClass)
-          .map(s => s.section)
+        studentDatabase.filter(s => s.class === selectedClass).map(s => s.section)
       )].sort();
 
       sections.forEach(sec => {
@@ -352,42 +556,46 @@
     const cls = document.getElementById('class-select').value;
     const sec = document.getElementById('section-select').value;
     const btn = document.getElementById('select-btn');
+    const absentBtn = document.getElementById('absent-btn');
     const nameDisplay = document.getElementById('name-display');
 
     if (cls && sec) {
       btn.disabled = false;
-      const count = getFilteredStudents().length;
-      nameDisplay.innerText = `${count} Students Ready`;
+      absentBtn.disabled = true;
+      const count = getActiveStudents().length;
+      nameDisplay.innerText = `${count} Students Available`;
       document.getElementById('roll-display').innerText = "---";
     } else {
       btn.disabled = true;
+      absentBtn.disabled = true;
       nameDisplay.innerText = "Select Class & Section";
       document.getElementById('roll-display').innerText = "---";
     }
   }
 
-  function getFilteredStudents() {
+  function getActiveStudents() {
     const cls = document.getElementById('class-select').value;
     const sec = document.getElementById('section-select').value;
-    return studentDatabase.filter(s => s.class === cls && s.section === sec);
+    return studentDatabase.filter(s => s.class === cls && s.section === sec && !excludedRolls.includes(s.roll));
   }
 
-  // RANDOM PICKER & ANIMATION
   function startRandomPicker() {
-    const students = getFilteredStudents();
+    const students = getActiveStudents();
     if (students.length === 0) {
-      alert("No students found in this section!");
+      alert("No available students left in this section!");
       return;
     }
 
     const btn = document.getElementById('select-btn');
+    const absentBtn = document.getElementById('absent-btn');
     const rollDisplay = document.getElementById('roll-display');
     const nameDisplay = document.getElementById('name-display');
 
     btn.disabled = true;
+    absentBtn.disabled = true;
 
     let counter = 0;
-    const totalShuffleTime = 2500;
+    const totalShuffleTime = 2200;
     const intervalTime = 70;
 
     const shuffleInterval = setInterval(() => {
@@ -399,27 +607,147 @@
       if (counter >= totalShuffleTime) {
         clearInterval(shuffleInterval);
         
-        const selectedStudent = students[Math.floor(Math.random() * students.length)];
-        rollDisplay.innerText = `#${selectedStudent.roll}`;
-        nameDisplay.innerText = selectedStudent.name;
+        lastSelectedStudent = students[Math.floor(Math.random() * students.length)];
+        rollDisplay.innerText = `#${lastSelectedStudent.roll}`;
+        nameDisplay.innerText = lastSelectedStudent.name;
 
-        showModal(selectedStudent);
+        document.getElementById('modal-roll').innerText = `#${lastSelectedStudent.roll}`;
+        document.getElementById('modal-name').innerText = lastSelectedStudent.name;
+        document.getElementById('modal-overlay').classList.add('active');
+
         btn.disabled = false;
+        absentBtn.disabled = false;
       }
     }, intervalTime);
   }
 
-  function showModal(student) {
-    document.getElementById('modal-roll').innerText = `#${student.roll}`;
-    document.getElementById('modal-name').innerText = student.name;
-    document.getElementById('modal-overlay').classList.add('active');
+  function markCurrentAbsent() {
+    if (lastSelectedStudent) {
+      excludedRolls.push(lastSelectedStudent.roll);
+      alert(`Cadet ${lastSelectedStudent.name} (#${lastSelectedStudent.roll}) marked absent.`);
+      document.getElementById('absent-btn').disabled = true;
+      checkSelection();
+    }
   }
 
-  function closeModal() {
+  // TIMER & GRADING
+  function startTimer() {
+    clearInterval(timerInterval);
+    const durationInput = parseInt(document.getElementById('timer-input').value) || 45;
+    let timeLeft = durationInput;
+
+    updateTimerDisplay(timeLeft);
+
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay(timeLeft);
+
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        openScoringModal();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('timer-clock').innerText = 
+      `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function closeModalAndStartTimer() {
     document.getElementById('modal-overlay').classList.remove('active');
+    startTimer();
   }
 
-  // AUTHENTICATION SECURITY FUNCTIONS
+  function openScoringModal() {
+    if (lastSelectedStudent) {
+      document.getElementById('score-modal-roll').innerText = `#${lastSelectedStudent.roll}`;
+      document.getElementById('score-modal-name').innerText = lastSelectedStudent.name;
+      document.getElementById('score-modal-overlay').classList.add('active');
+    }
+  }
+
+  function adjustPoints(change) {
+    document.getElementById('score-modal-overlay').classList.remove('active');
+
+    if (lastSelectedStudent) {
+      const student = studentDatabase.find(s => s.roll === lastSelectedStudent.roll && s.class === lastSelectedStudent.class);
+      if (student) {
+        student.points = (student.points || 0) + change;
+        saveDatabaseToStorage();
+        updateLeaderboard();
+
+        if (change > 0) {
+          triggerConfettiShower();
+        } else {
+          triggerUnhappyModal(student.name);
+        }
+      }
+    }
+  }
+
+  // CELEBRATION CONFETTI SHOWER (+ Point)
+  function triggerConfettiShower() {
+    if (typeof confetti === 'function') {
+      const duration = 2000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+  }
+
+  // UNHAPPY EMOJI & SHAKE MODAL (- Point)
+  function triggerUnhappyModal(studentName) {
+    document.getElementById('unhappy-modal-text').innerText = `${studentName} (-1 Point)`;
+    const unhappyModal = document.getElementById('unhappy-modal-overlay');
+    unhappyModal.classList.add('active');
+
+    setTimeout(() => {
+      unhappyModal.classList.remove('active');
+    }, 1400);
+  }
+
+  function updateLeaderboard() {
+    const list = document.getElementById('leaderboard-list');
+    list.innerHTML = '';
+
+    const sorted = [...studentDatabase]
+      .filter(s => (s.points || 0) !== 0)
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 5);
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<li style="text-align:center; color:#94a3b8; padding:20px 0;">No scores recorded yet.</li>';
+      return;
+    }
+
+    sorted.forEach((s, index) => {
+      const li = document.createElement('li');
+      li.className = 'leaderboard-item';
+      let badge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+
+      li.innerHTML = `
+        <span class="leaderboard-rank">${badge}</span>
+        <div class="leaderboard-info">
+          <div class="leaderboard-name">${s.name}</div>
+          <div class="leaderboard-details">${s.class} (${s.section}) - #${s.roll}</div>
+        </div>
+        <span class="leaderboard-score">${s.points > 0 ? '+' + s.points : s.points}</span>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  // AUTHENTICATION & ADMIN CONTROLS
   function openAuthModal() {
     document.getElementById('admin-pass').value = '';
     document.getElementById('auth-modal').classList.add('active');
@@ -434,24 +762,98 @@
     const pass = document.getElementById('admin-pass').value;
     if (pass === "LERM@1982") {
       closeAuthModal();
-      document.getElementById('upload-panel').classList.remove('hidden');
-      alert("Access Granted! Upload Panel is now unlocked.");
+      document.getElementById('admin-panel').classList.remove('hidden');
+      renderStudentListEditor();
     } else {
-      alert("Incorrect Password! Access Denied.");
+      alert("Incorrect Password!");
       document.getElementById('admin-pass').value = '';
     }
   }
 
-  function lockUploadPanel() {
-    document.getElementById('upload-panel').classList.add('hidden');
+  function lockAdminPanel() {
+    document.getElementById('admin-panel').classList.add('hidden');
   }
 
-  // BULK CSV PARSER
+  function renderStudentListEditor() {
+    const container = document.getElementById('student-list-editor');
+    container.innerHTML = '';
+
+    if (studentDatabase.length === 0) {
+      container.innerHTML = '<div style="text-align:center; color:#94a3b8;">No records in database.</div>';
+      return;
+    }
+
+    studentDatabase.forEach((s, index) => {
+      const row = document.createElement('div');
+      row.className = 'student-row';
+      row.innerHTML = `
+        <span><strong>${s.class} (${s.section})</strong> - #${s.roll} ${s.name} [Pts: ${s.points || 0}]</span>
+        <div style="display:flex; gap:6px;">
+          <button onclick="openEditModal(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button>
+          <button onclick="deleteStudent(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Delete</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function openEditModal(index) {
+    const student = studentDatabase[index];
+    document.getElementById('edit-student-index').value = index;
+    document.getElementById('edit-class').value = student.class;
+    document.getElementById('edit-section').value = student.section;
+    document.getElementById('edit-roll').value = student.roll;
+    document.getElementById('edit-name').value = student.name;
+    document.getElementById('edit-modal-overlay').classList.add('active');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal-overlay').classList.remove('active');
+  }
+
+  function saveStudentEdit() {
+    const index = parseInt(document.getElementById('edit-student-index').value);
+    if (!isNaN(index) && studentDatabase[index]) {
+      studentDatabase[index].class = document.getElementById('edit-class').value.trim();
+      studentDatabase[index].section = document.getElementById('edit-section').value.trim();
+      studentDatabase[index].roll = document.getElementById('edit-roll').value.trim();
+      studentDatabase[index].name = document.getElementById('edit-name').value.trim();
+
+      saveDatabaseToStorage();
+      renderStudentListEditor();
+      populateClassDropdown();
+      updateLeaderboard();
+      closeEditModal();
+    }
+  }
+
+  function deleteStudent(index) {
+    if (confirm("Delete this student entry?")) {
+      studentDatabase.splice(index, 1);
+      saveDatabaseToStorage();
+      renderStudentListEditor();
+      populateClassDropdown();
+      updateLeaderboard();
+    }
+  }
+
+  function resetToDefaultData() {
+    if (confirm("Reset database to default sample records? All custom uploads and scores will be cleared.")) {
+      studentDatabase = JSON.parse(JSON.stringify(defaultDatabase));
+      saveDatabaseToStorage();
+      renderStudentListEditor();
+      populateClassDropdown();
+      updateLeaderboard();
+      alert("Database reset!");
+    }
+  }
+
+  // CSV PARSER
   function processCSV() {
     const fileInput = document.getElementById('csv-file');
     const file = fileInput.files[0];
     if (!file) {
-      alert("Please select a CSV file first!");
+      alert("Please select a CSV file!");
       return;
     }
 
@@ -474,18 +876,21 @@
             class: parts[0],
             section: parts[1],
             roll: parts[2],
-            name: parts[3]
+            name: parts[3],
+            points: 0
           });
           count++;
         }
       });
 
       if (count > 0) {
-        alert(`Successfully added ${count} student records!`);
+        saveDatabaseToStorage();
+        renderStudentListEditor();
         populateClassDropdown();
+        alert(`Successfully imported ${count} student records!`);
         fileInput.value = '';
       } else {
-        alert("Could not parse file. Ensure format is: Class, Section, Roll No, Name");
+        alert("Could not parse file. Format: Class, Section, Roll No, Name");
       }
     };
     reader.readAsText(file);

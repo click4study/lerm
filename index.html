@@ -36,7 +36,7 @@
       display: flex;
       gap: 20px;
       width: 100%;
-      max-width: 1050px;
+      max-width: 1100px;
     }
     .main-container {
       flex: 2;
@@ -52,7 +52,7 @@
       padding: 25px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      min-width: 280px;
+      min-width: 300px;
     }
     
     /* HEADER BADGE LAYOUT */
@@ -140,18 +140,62 @@
     .btn-absent:hover { background-color: #475569; }
     button:disabled { background-color: #cbd5e1 !important; cursor: not-allowed !important; box-shadow: none; }
 
-    /* TIMER SECTION */
-    .timer-container {
+    /* CIRCULAR INTERACTIVE TIMER SECTION */
+    .timer-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
       padding: 15px;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-bottom: 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-around;
     }
-    .timer-clock { font-size: 28px; font-weight: 800; color: var(--primary); }
+    .circle-timer-container {
+      position: relative;
+      width: 90px;
+      height: 90px;
+    }
+    .circle-timer-svg {
+      width: 90px;
+      height: 90px;
+      transform: rotate(-90deg);
+    }
+    .circle-bg {
+      fill: none;
+      stroke: #cbd5e1;
+      stroke-width: 8;
+    }
+    .circle-progress {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .timer-text-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .btn-early-finish {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: auto;
+    }
+    .btn-early-finish:hover { background-color: var(--primary-hover); }
 
     /* LEADERBOARD STYLES */
     .leaderboard-title {
@@ -169,31 +213,34 @@
       list-style: none;
       padding: 0;
       margin: 15px 0 0;
+      max-height: 480px;
+      overflow-y: auto;
     }
     .leaderboard-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
+      padding: 8px 10px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .leaderboard-rank {
       font-weight: 800;
       color: var(--accent-hover);
       width: 25px;
+      font-size: 13px;
     }
-    .leaderboard-info { flex: 1; text-align: left; padding-left: 8px; }
-    .leaderboard-name { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .leaderboard-info { flex: 1; text-align: left; padding-left: 6px; }
+    .leaderboard-name { font-weight: 700; font-size: 13px; color: #1e293b; }
     .leaderboard-details { font-size: 11px; color: #64748b; }
     .leaderboard-score {
       font-weight: 800;
-      font-size: 16px;
+      font-size: 14px;
       color: var(--primary);
       background: #e0e7ff;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 12px;
     }
 
@@ -270,7 +317,6 @@
     }
     .btn-point-deduct:hover { background: #b91c1c; }
     
-    /* UNHAPPY EMOJI & SHAKE EFFECT */
     .unhappy-emoji-box {
       font-size: 75px;
       line-height: 1;
@@ -325,7 +371,10 @@
       </div>
       <div>
         <label>Timer Limit (Sec)</label>
-        <input type="number" id="timer-input" value="45" min="5" max="300">
+        <!-- 5-SECOND INCREMENT DROPDOWN -->
+        <select id="timer-select">
+          <!-- Populated dynamically via JS -->
+        </select>
       </div>
     </div>
 
@@ -341,10 +390,22 @@
       <button id="absent-btn" class="btn-absent" onclick="markCurrentAbsent()" disabled>🚫 Mark Absent</button>
     </div>
 
-    <!-- COUNTDOWN TIMER DISPLAY -->
-    <div class="timer-container">
-      <span style="font-weight:700; color:#1e40af; font-size: 15px;">⏱️ Revision Countdown:</span>
-      <div id="timer-clock" class="timer-clock">00:45</div>
+    <!-- INTERACTIVE CIRCULAR TIMER DISPLAY -->
+    <div class="timer-card">
+      <div style="text-align: left;">
+        <span style="font-weight:700; color:#1e40af; font-size: 14px; display:block;">⏱️ Active Revision Timer</span>
+        <span style="font-size: 12px; color: #64748b;">Auto-starts upon closing selection modal</span>
+      </div>
+
+      <div class="circle-timer-container">
+        <svg class="circle-timer-svg">
+          <circle class="circle-bg" cx="45" cy="45" r="40"></circle>
+          <circle id="circle-progress" class="circle-progress" cx="45" cy="45" r="40"></circle>
+        </svg>
+        <div id="timer-clock" class="timer-text-overlay">00:45</div>
+      </div>
+
+      <button id="early-finish-btn" class="btn-early-finish" onclick="triggerEarlyFinish()" disabled>⚡ Finish Early</button>
     </div>
 
     <!-- ADMIN PANEL -->
@@ -380,9 +441,9 @@
     </div>
   </div>
 
-  <!-- SIDEBAR LEADERBOARD -->
+  <!-- SIDEBAR LEADERBOARD (TOP 10) -->
   <div class="sidebar-leaderboard">
-    <h3 class="leaderboard-title">🏆 TOPPERS</h3>
+    <h3 class="leaderboard-title">🏆 TOPPERS (TOP 10)</h3>
     <ul id="leaderboard-list" class="leaderboard-list">
       <li style="text-align:center; color:#94a3b8; padding:20px 0;">No points awarded yet.</li>
     </ul>
@@ -390,23 +451,27 @@
 
 </div>
 
-<!-- SELECTION ANNOUNCEMENT MODAL -->
+<!-- SELECTION ANNOUNCEMENT MODAL (WITH ABSENT/SKIP BUTTON) -->
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal-card">
     <div style="font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase;">🎉 Selected Cadet / Student</div>
     <div id="modal-roll" class="modal-roll">#00</div>
     <div id="modal-name" class="modal-name">Student Name</div>
-    <button onclick="closeModalAndStartTimer()" style="background: var(--primary); color: white; padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Start Revision</button>
+    
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: 15px;">
+      <button onclick="closeModalAndStartTimer()" style="background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Start Revision</button>
+      <button onclick="markAbsentFromModal()" style="background: #64748b; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">🚫 Absent / Skip</button>
+    </div>
   </div>
 </div>
 
-<!-- TIME-UP SCORING POP-UP MODAL -->
+<!-- TIME-UP / SCORING POP-UP MODAL -->
 <div id="score-modal-overlay" class="modal-overlay">
   <div class="modal-card">
-    <div style="font-size: 13px; font-weight: 700; color: var(--danger); text-transform: uppercase;">⏰ Time Up For Revision!</div>
+    <div style="font-size: 13px; font-weight: 700; color: var(--danger); text-transform: uppercase;">⏰ Evaluate Cadet Response</div>
     <div id="score-modal-roll" class="modal-roll">#00</div>
     <div id="score-modal-name" class="modal-name">Student Name</div>
-    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Evaluate cadet's response:</p>
+    <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Evaluate cadet's performance:</p>
     
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
       <button class="btn-point-add" onclick="adjustPoints(1)">+ Allot Point</button>
@@ -477,13 +542,28 @@
   let excludedRolls = [];
   let lastSelectedStudent = null;
   let timerInterval = null;
+  let totalTimerDuration = 45;
 
   window.onload = function() {
+    populateTimerDropdown();
     loadDatabaseFromStorage();
     loadSchoolName();
     populateClassDropdown();
     updateLeaderboard();
   };
+
+  // 5-SECOND STEP TIMER DROPDOWN POPULATION
+  function populateTimerDropdown() {
+    const timerSelect = document.getElementById('timer-select');
+    timerSelect.innerHTML = '';
+    for (let sec = 5; sec <= 120; sec += 5) {
+      const opt = document.createElement('option');
+      opt.value = sec;
+      opt.innerText = `${sec} Seconds`;
+      if (sec === 45) opt.selected = true; // Default 45s
+      timerSelect.appendChild(opt);
+    }
+  }
 
   function loadDatabaseFromStorage() {
     const stored = localStorage.getItem('lerm_student_db');
@@ -629,11 +709,23 @@
     }
   }
 
+  function markAbsentFromModal() {
+    if (lastSelectedStudent) {
+      excludedRolls.push(lastSelectedStudent.roll);
+      document.getElementById('modal-overlay').classList.remove('active');
+      checkSelection();
+      // Auto-trigger next candidate selection immediately
+      setTimeout(() => { startRandomPicker(); }, 300);
+    }
+  }
+
+  // TIMER & INTERACTIVE RING
   function startTimer() {
     clearInterval(timerInterval);
-    const durationInput = parseInt(document.getElementById('timer-input').value) || 45;
-    let timeLeft = durationInput;
+    totalTimerDuration = parseInt(document.getElementById('timer-select').value) || 45;
+    let timeLeft = totalTimerDuration;
 
+    document.getElementById('early-finish-btn').disabled = false;
     updateTimerDisplay(timeLeft);
 
     timerInterval = setInterval(() => {
@@ -642,6 +734,7 @@
 
       if (timeLeft <= 0) {
         clearInterval(timerInterval);
+        document.getElementById('early-finish-btn').disabled = true;
         openScoringModal();
       }
     }, 1000);
@@ -652,6 +745,18 @@
     const secs = seconds % 60;
     document.getElementById('timer-clock').innerText = 
       `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+    // Circular ring progress update (Perimeter = 2 * PI * r = 2 * 3.14159 * 40 = 251.2)
+    const circle = document.getElementById('circle-progress');
+    const offset = 251.2 - (seconds / totalTimerDuration) * 251.2;
+    circle.style.strokeDashoffset = offset;
+  }
+
+  function triggerEarlyFinish() {
+    clearInterval(timerInterval);
+    document.getElementById('early-finish-btn').disabled = true;
+    updateTimerDisplay(0);
+    openScoringModal();
   }
 
   function closeModalAndStartTimer() {
@@ -716,6 +821,7 @@
     }, 1400);
   }
 
+  // LEADERBOARD (TOP 10)
   function updateLeaderboard() {
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
@@ -723,7 +829,7 @@
     const sorted = [...studentDatabase]
       .filter(s => (s.points || 0) !== 0)
       .sort((a, b) => b.points - a.points)
-      .slice(0, 5);
+      .slice(0, 10); // Updated to Top 10
 
     if (sorted.length === 0) {
       list.innerHTML = '<li style="text-align:center; color:#94a3b8; padding:20px 0;">No scores recorded yet.</li>';
@@ -747,6 +853,7 @@
     });
   }
 
+  // ADMIN PANEL CONTROLS & EDIT / DELETE FIX
   function openAuthModal() {
     document.getElementById('admin-pass').value = '';
     document.getElementById('auth-modal').classList.add('active');
@@ -788,8 +895,8 @@
       row.innerHTML = `
         <span><strong>${s.class} (${s.section})</strong> - #${s.roll} ${s.name} [Pts: ${s.points || 0}]</span>
         <div style="display:flex; gap:6px;">
-          <button onclick="openEditModal(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button>
-          <button onclick="deleteStudent(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Delete</button>
+          <button type="button" onclick="openEditModal(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button>
+          <button type="button" onclick="deleteStudent(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Delete</button>
         </div>
       `;
       container.appendChild(row);
@@ -798,12 +905,14 @@
 
   function openEditModal(index) {
     const student = studentDatabase[index];
-    document.getElementById('edit-student-index').value = index;
-    document.getElementById('edit-class').value = student.class;
-    document.getElementById('edit-section').value = student.section;
-    document.getElementById('edit-roll').value = student.roll;
-    document.getElementById('edit-name').value = student.name;
-    document.getElementById('edit-modal-overlay').classList.add('active');
+    if (student) {
+      document.getElementById('edit-student-index').value = index;
+      document.getElementById('edit-class').value = student.class;
+      document.getElementById('edit-section').value = student.section;
+      document.getElementById('edit-roll').value = student.roll;
+      document.getElementById('edit-name').value = student.name;
+      document.getElementById('edit-modal-overlay').classList.add('active');
+    }
   }
 
   function closeEditModal() {
@@ -827,7 +936,7 @@
   }
 
   function deleteStudent(index) {
-    if (confirm("Delete this student entry?")) {
+    if (confirm(`Delete entry for ${studentDatabase[index].name}?`)) {
       studentDatabase.splice(index, 1);
       saveDatabaseToStorage();
       renderStudentListEditor();

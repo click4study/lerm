@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LERM - Learning Enabled Revision Module</title>
-  <!-- Canvas Confetti Library for Allot Point Celebration -->
+  <!-- Canvas Confetti Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
@@ -55,7 +55,6 @@
       min-width: 300px;
     }
     
-    /* HEADER BADGE LAYOUT */
     .header-badge-container {
       display: flex;
       align-items: center;
@@ -140,7 +139,7 @@
     .btn-absent:hover { background-color: #475569; }
     button:disabled { background-color: #cbd5e1 !important; cursor: not-allowed !important; box-shadow: none; }
 
-    /* CIRCULAR INTERACTIVE TIMER SECTION */
+    /* CIRCULAR TIMER */
     .timer-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -197,7 +196,29 @@
     }
     .btn-early-finish:hover { background-color: var(--primary-hover); }
 
-    /* LEADERBOARD STYLES */
+    /* PUBLIC CSV UPLOAD CARD */
+    .upload-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-upload {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      width: auto;
+      white-space: nowrap;
+    }
+    .btn-upload:hover { background-color: #15803d; }
+
+    /* LEADERBOARD */
     .leaderboard-title {
       font-size: 18px;
       font-weight: 800;
@@ -244,7 +265,7 @@
       border-radius: 12px;
     }
 
-    /* ADMIN PANELS */
+    /* ADMIN PANEL */
     .admin-section {
       margin-top: 25px;
       padding-top: 20px;
@@ -283,7 +304,7 @@
       font-size: 13px;
     }
 
-    /* MODAL STYLES */
+    /* MODALS */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -338,6 +359,8 @@
     @media (max-width: 850px) {
       .layout-wrapper { flex-direction: column; }
       .sidebar-leaderboard { min-width: 100%; box-sizing: border-box; }
+      .upload-card { flex-direction: column; }
+      .btn-upload { width: 100%; }
     }
   </style>
 </head>
@@ -348,7 +371,6 @@
   <!-- MAIN INTERACTIVE CONTAINER -->
   <div class="main-container">
     
-    <!-- HEADER WITH DYNAMIC SCHOOL NAME -->
     <div class="header-badge-container">
       <span id="school-name-badge" class="badge">Sainik School Interactive Module</span>
     </div>
@@ -371,7 +393,6 @@
       </div>
       <div>
         <label>Timer Limit (Sec)</label>
-        <!-- 5-SECOND INCREMENT DROPDOWN -->
         <select id="timer-select">
           <!-- Populated dynamically via JS -->
         </select>
@@ -418,7 +439,6 @@
           <button onclick="lockAdminPanel()" style="width:auto; padding:4px 10px; font-size:12px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Lock Panel</button>
         </div>
 
-        <!-- SCHOOL NAME SETTING PROVISION -->
         <div style="margin-top: 15px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e9d5ff;">
           <label style="color:#6d28d9; margin-bottom:4px;">Custom School / Institute Name:</label>
           <div style="display:flex; gap:8px;">
@@ -426,10 +446,6 @@
             <button onclick="saveSchoolName()" style="width:auto; padding:8px 15px; background:#7c3aed; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Save</button>
           </div>
         </div>
-
-        <p style="font-size: 12px; color: #581c87; margin: 15px 0 5px;"><strong>Bulk Upload (CSV / Text):</strong> Format: <code>Class, Section, Roll No, Student Name</code></p>
-        <input type="file" id="csv-file" accept=".csv, .txt">
-        <button onclick="processCSV()" style="margin-top: 8px; background-color: #7c3aed; color: white;">Upload & Merge Records</button>
 
         <hr style="border:0; border-top:1px solid #e9d5ff; margin: 15px 0;">
 
@@ -439,6 +455,13 @@
         <button onclick="resetToDefaultData()" style="margin-top: 10px; background-color: var(--danger); color: white;">Reset All Stored Data</button>
       </div>
     </div>
+
+    <!-- CSV UPLOAD -->
+    <div class="upload-card">
+      <input type="file" id="csv-file" accept=".csv, .txt">
+      <button class="btn-upload" onclick="processCSV()">📁 Upload CSV</button>
+    </div>
+
   </div>
 
   <!-- SIDEBAR LEADERBOARD (TOP 10) -->
@@ -451,7 +474,7 @@
 
 </div>
 
-<!-- SELECTION ANNOUNCEMENT MODAL (WITH ABSENT/SKIP BUTTON) -->
+<!-- SELECTION ANNOUNCEMENT MODAL -->
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal-card">
     <div style="font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase;">🎉 Selected Cadet / Student</div>
@@ -465,7 +488,7 @@
   </div>
 </div>
 
-<!-- TIME-UP / SCORING POP-UP MODAL -->
+<!-- SCORING MODAL -->
 <div id="score-modal-overlay" class="modal-overlay">
   <div class="modal-card">
     <div style="font-size: 13px; font-weight: 700; color: var(--danger); text-transform: uppercase;">⏰ Evaluate Cadet Response</div>
@@ -518,7 +541,7 @@
 <div id="auth-modal" class="modal-overlay">
   <div class="modal-card">
     <h3 style="margin-top:0; color:var(--primary);">Admin Verification</h3>
-    <p style="font-size:13px; color:#64748b;">Enter password to edit student records or upload files:</p>
+    <p style="font-size:13px; color:#64748b;">Enter password to edit student records or settings:</p>
     <input type="password" id="admin-pass" placeholder="Enter Admin Password">
     <div style="display:flex; gap:10px; margin-top:12px;">
       <button onclick="verifyPassword()" style="background:var(--primary); color:white;">Unlock Controls</button>
@@ -540,8 +563,10 @@
 
   let studentDatabase = [];
   let excludedRolls = [];
+  let recentSelections = []; // 5-CYCLE COOLDOWN QUEUE
   let lastSelectedStudent = null;
   let timerInterval = null;
+  let isTimerRunning = false;
   let totalTimerDuration = 45;
 
   window.onload = function() {
@@ -552,7 +577,16 @@
     updateLeaderboard();
   };
 
-  // 5-SECOND STEP TIMER DROPDOWN POPULATION
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   function populateTimerDropdown() {
     const timerSelect = document.getElementById('timer-select');
     timerSelect.innerHTML = '';
@@ -560,24 +594,32 @@
       const opt = document.createElement('option');
       opt.value = sec;
       opt.innerText = `${sec} Seconds`;
-      if (sec === 45) opt.selected = true; // Default 45s
+      if (sec === 45) opt.selected = true;
       timerSelect.appendChild(opt);
     }
   }
 
   function loadDatabaseFromStorage() {
-    const stored = localStorage.getItem('lerm_student_db');
-    if (stored) {
-      studentDatabase = JSON.parse(stored);
-      studentDatabase.forEach(s => { if (s.points === undefined) s.points = 0; });
-    } else {
+    try {
+      const stored = localStorage.getItem('lerm_student_db');
+      if (stored) {
+        studentDatabase = JSON.parse(stored);
+        studentDatabase.forEach(s => { if (s.points === undefined) s.points = 0; });
+      } else {
+        studentDatabase = JSON.parse(JSON.stringify(defaultDatabase));
+        saveDatabaseToStorage();
+      }
+    } catch(e) {
       studentDatabase = JSON.parse(JSON.stringify(defaultDatabase));
-      saveDatabaseToStorage();
     }
   }
 
   function saveDatabaseToStorage() {
-    localStorage.setItem('lerm_student_db', JSON.stringify(studentDatabase));
+    try {
+      localStorage.setItem('lerm_student_db', JSON.stringify(studentDatabase));
+    } catch(e) {
+      console.error("LocalStorage save failed", e);
+    }
   }
 
   function loadSchoolName() {
@@ -611,6 +653,8 @@
   }
 
   function updateSectionDropdown() {
+    excludedRolls = [];
+    recentSelections = []; // Reset 5-cycle history when changing section
     const selectedClass = document.getElementById('class-select').value;
     const sectionSelect = document.getElementById('section-select');
     sectionSelect.innerHTML = '<option value="">-- Section --</option>';
@@ -639,10 +683,10 @@
     const nameDisplay = document.getElementById('name-display');
 
     if (cls && sec) {
-      btn.disabled = false;
+      const activeCount = getActiveStudents().length;
+      btn.disabled = activeCount === 0;
       absentBtn.disabled = true;
-      const count = getActiveStudents().length;
-      nameDisplay.innerText = `${count} Students Available`;
+      nameDisplay.innerText = activeCount > 0 ? `${activeCount} Students Available` : "No Available Students";
       document.getElementById('roll-display').innerText = "---";
     } else {
       btn.disabled = true;
@@ -652,16 +696,29 @@
     }
   }
 
+  // GET ACTIVE CANDIDATES (WITH 5-CYCLE COOLDOWN CHECK)
   function getActiveStudents() {
     const cls = document.getElementById('class-select').value;
     const sec = document.getElementById('section-select').value;
-    return studentDatabase.filter(s => s.class === cls && s.section === sec && !excludedRolls.includes(s.roll));
+    
+    // Non-absent base pool
+    const basePool = studentDatabase.filter(s => s.class === cls && s.section === sec && !excludedRolls.includes(s.roll));
+
+    // Exclude students who were selected in the last 5 cycles
+    const eligiblePool = basePool.filter(s => {
+      const studentKey = `${s.class}_${s.section}_${s.roll}`;
+      return !recentSelections.includes(studentKey);
+    });
+
+    // Fallback: If section has 5 or fewer students and cooldown leaves no options, fallback to base pool
+    return eligiblePool.length > 0 ? eligiblePool : basePool;
   }
 
   function startRandomPicker() {
     const students = getActiveStudents();
-    if (students.length === 0) {
+    if (!students || students.length === 0) {
       alert("No available students left in this section!");
+      checkSelection();
       return;
     }
 
@@ -679,20 +736,35 @@
 
     const shuffleInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * students.length);
-      rollDisplay.innerText = `#${students[randomIndex].roll}`;
-      nameDisplay.innerText = students[randomIndex].name;
+      const currentCandidate = students[randomIndex];
+      
+      if (currentCandidate) {
+        rollDisplay.innerText = `#${currentCandidate.roll}`;
+        nameDisplay.innerText = currentCandidate.name;
+      }
       counter += intervalTime;
 
       if (counter >= totalShuffleTime) {
         clearInterval(shuffleInterval);
         
-        lastSelectedStudent = students[Math.floor(Math.random() * students.length)];
-        rollDisplay.innerText = `#${lastSelectedStudent.roll}`;
-        nameDisplay.innerText = lastSelectedStudent.name;
+        const finalCandidate = students[Math.floor(Math.random() * students.length)] || currentCandidate;
+        if (finalCandidate) {
+          lastSelectedStudent = finalCandidate;
+          
+          // ADD TO 5-CYCLE COOLDOWN QUEUE
+          const selectedKey = `${lastSelectedStudent.class}_${lastSelectedStudent.section}_${lastSelectedStudent.roll}`;
+          recentSelections.push(selectedKey);
+          if (recentSelections.length > 5) {
+            recentSelections.shift(); // Keep only the last 5 selections
+          }
 
-        document.getElementById('modal-roll').innerText = `#${lastSelectedStudent.roll}`;
-        document.getElementById('modal-name').innerText = lastSelectedStudent.name;
-        document.getElementById('modal-overlay').classList.add('active');
+          rollDisplay.innerText = `#${lastSelectedStudent.roll}`;
+          nameDisplay.innerText = lastSelectedStudent.name;
+
+          document.getElementById('modal-roll').innerText = `#${lastSelectedStudent.roll}`;
+          document.getElementById('modal-name').innerText = lastSelectedStudent.name;
+          document.getElementById('modal-overlay').classList.add('active');
+        }
 
         btn.disabled = false;
         absentBtn.disabled = false;
@@ -714,14 +786,14 @@
       excludedRolls.push(lastSelectedStudent.roll);
       document.getElementById('modal-overlay').classList.remove('active');
       checkSelection();
-      // Auto-trigger next candidate selection immediately
       setTimeout(() => { startRandomPicker(); }, 300);
     }
   }
 
-  // TIMER & INTERACTIVE RING
+  // TIMER LOGIC
   function startTimer() {
     clearInterval(timerInterval);
+    isTimerRunning = true;
     totalTimerDuration = parseInt(document.getElementById('timer-select').value) || 45;
     let timeLeft = totalTimerDuration;
 
@@ -734,6 +806,7 @@
 
       if (timeLeft <= 0) {
         clearInterval(timerInterval);
+        isTimerRunning = false;
         document.getElementById('early-finish-btn').disabled = true;
         openScoringModal();
       }
@@ -746,14 +819,16 @@
     document.getElementById('timer-clock').innerText = 
       `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-    // Circular ring progress update (Perimeter = 2 * PI * r = 2 * 3.14159 * 40 = 251.2)
     const circle = document.getElementById('circle-progress');
-    const offset = 251.2 - (seconds / totalTimerDuration) * 251.2;
+    const safeDuration = totalTimerDuration > 0 ? totalTimerDuration : 1;
+    const offset = Math.max(0, 251.2 - (seconds / safeDuration) * 251.2);
     circle.style.strokeDashoffset = offset;
   }
 
   function triggerEarlyFinish() {
+    if (!isTimerRunning) return;
     clearInterval(timerInterval);
+    isTimerRunning = false;
     document.getElementById('early-finish-btn').disabled = true;
     updateTimerDisplay(0);
     openScoringModal();
@@ -776,7 +851,7 @@
     document.getElementById('score-modal-overlay').classList.remove('active');
 
     if (lastSelectedStudent) {
-      const student = studentDatabase.find(s => s.roll === lastSelectedStudent.roll && s.class === lastSelectedStudent.class);
+      const student = studentDatabase.find(s => s.roll === lastSelectedStudent.roll && s.class === lastSelectedStudent.class && s.section === lastSelectedStudent.section);
       if (student) {
         student.points = (student.points || 0) + change;
         saveDatabaseToStorage();
@@ -821,7 +896,6 @@
     }, 1400);
   }
 
-  // LEADERBOARD (TOP 10)
   function updateLeaderboard() {
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
@@ -829,7 +903,7 @@
     const sorted = [...studentDatabase]
       .filter(s => (s.points || 0) !== 0)
       .sort((a, b) => b.points - a.points)
-      .slice(0, 10); // Updated to Top 10
+      .slice(0, 10);
 
     if (sorted.length === 0) {
       list.innerHTML = '<li style="text-align:center; color:#94a3b8; padding:20px 0;">No scores recorded yet.</li>';
@@ -844,8 +918,8 @@
       li.innerHTML = `
         <span class="leaderboard-rank">${badge}</span>
         <div class="leaderboard-info">
-          <div class="leaderboard-name">${s.name}</div>
-          <div class="leaderboard-details">${s.class} (${s.section}) - #${s.roll}</div>
+          <div class="leaderboard-name">${escapeHTML(s.name)}</div>
+          <div class="leaderboard-details">${escapeHTML(s.class)} (${escapeHTML(s.section)}) - #${escapeHTML(s.roll)}</div>
         </div>
         <span class="leaderboard-score">${s.points > 0 ? '+' + s.points : s.points}</span>
       `;
@@ -853,7 +927,59 @@
     });
   }
 
-  // ADMIN PANEL CONTROLS & EDIT / DELETE FIX
+  // PUBLIC CSV PROCESSOR
+  function processCSV() {
+    const fileInput = document.getElementById('csv-file');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Please select a file!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/);
+      let count = 0;
+
+      lines.forEach((line, index) => {
+        if (!line.trim()) return;
+        const parts = line.split(',').map(p => p.trim().replace(/^"+|"+$/g, ''));
+
+        if (index === 0 && (parts[0].toLowerCase().includes("class") || parts[2].toLowerCase().includes("roll"))) {
+          return;
+        }
+
+        if (parts.length >= 4) {
+          const cls = parts[0];
+          const sec = parts[1];
+          const roll = parts[2];
+          const name = parts[3];
+
+          const exists = studentDatabase.some(s => s.class === cls && s.section === sec && s.roll === roll);
+          if (!exists) {
+            studentDatabase.push({ class: cls, section: sec, roll: roll, name: name, points: 0 });
+            count++;
+          }
+        }
+      });
+
+      if (count > 0) {
+        saveDatabaseToStorage();
+        if (!document.getElementById('admin-panel').classList.contains('hidden')) {
+          renderStudentListEditor();
+        }
+        populateClassDropdown();
+        alert(`Successfully imported ${count} new student records!`);
+        fileInput.value = '';
+      } else {
+        alert("No new records imported.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // SECURED ADMIN CONTROLS
   function openAuthModal() {
     document.getElementById('admin-pass').value = '';
     document.getElementById('auth-modal').classList.add('active');
@@ -893,7 +1019,7 @@
       const row = document.createElement('div');
       row.className = 'student-row';
       row.innerHTML = `
-        <span><strong>${s.class} (${s.section})</strong> - #${s.roll} ${s.name} [Pts: ${s.points || 0}]</span>
+        <span><strong>${escapeHTML(s.class)} (${escapeHTML(s.section)})</strong> - #${escapeHTML(s.roll)} ${escapeHTML(s.name)} [Pts: ${s.points || 0}]</span>
         <div style="display:flex; gap:6px;">
           <button type="button" onclick="openEditModal(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Edit</button>
           <button type="button" onclick="deleteStudent(${index})" style="width:auto; padding:3px 8px; font-size:11px; background:var(--danger); color:white; border:none; border-radius:4px; cursor:pointer;">Delete</button>
@@ -948,59 +1074,13 @@
   function resetToDefaultData() {
     if (confirm("Reset database to default sample records? All custom uploads and scores will be cleared.")) {
       studentDatabase = JSON.parse(JSON.stringify(defaultDatabase));
+      recentSelections = [];
       saveDatabaseToStorage();
       renderStudentListEditor();
       populateClassDropdown();
       updateLeaderboard();
       alert("Database reset!");
     }
-  }
-
-  function processCSV() {
-    const fileInput = document.getElementById('csv-file');
-    const file = fileInput.files[0];
-    if (!file) {
-      alert("Please select a CSV file!");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const text = e.target.result;
-      const lines = text.split(/\r?\n/);
-      let count = 0;
-
-      lines.forEach((line, index) => {
-        if (!line.trim()) return;
-        const parts = line.split(',').map(p => p.trim().replace(/^"+|"+$/g, ''));
-
-        if (index === 0 && (parts[0].toLowerCase().includes("class") || parts[2].toLowerCase().includes("roll"))) {
-          return;
-        }
-
-        if (parts.length >= 4) {
-          studentDatabase.push({
-            class: parts[0],
-            section: parts[1],
-            roll: parts[2],
-            name: parts[3],
-            points: 0
-          });
-          count++;
-        }
-      });
-
-      if (count > 0) {
-        saveDatabaseToStorage();
-        renderStudentListEditor();
-        populateClassDropdown();
-        alert(`Successfully imported ${count} student records!`);
-        fileInput.value = '';
-      } else {
-        alert("Could not parse file. Format: Class, Section, Roll No, Name");
-      }
-    };
-    reader.readAsText(file);
   }
 </script>
 
